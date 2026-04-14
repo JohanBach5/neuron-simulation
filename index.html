@@ -5,193 +5,708 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Neuron Simulation</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #080c10;
+            --bg2: #0d1117;
+            --bg3: #131920;
+            --border: rgba(0, 200, 150, 0.15);
+            --accent: #00c896;
+            --accent2: #ff6b35;
+            --text: #c8d8d0;
+            --text-muted: #4a6060;
+            --source: #3b9eff;
+            --target: #ff6b35;
+            --glow: 0 0 20px rgba(0, 200, 150, 0.2);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'DM Sans', sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Subtle grid background */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(0,200,150,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0,200,150,0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        header {
+            padding: 24px 32px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: baseline;
+            gap: 16px;
+            position: relative;
+            z-index: 1;
+        }
+
+        header h1 {
+            font-family: 'Space Mono', monospace;
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--accent);
+            letter-spacing: -0.5px;
+        }
+
+        header span {
+            font-size: 12px;
+            color: var(--text-muted);
+            font-family: 'Space Mono', monospace;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--accent);
+            margin-left: auto;
+            box-shadow: 0 0 8px var(--accent);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
+        .layout {
+            display: grid;
+            grid-template-columns: 260px 1fr;
+            grid-template-rows: auto 1fr;
+            gap: 0;
+            height: calc(100vh - 65px);
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Controls sidebar */
+        .controls {
+            grid-row: 1 / 3;
+            border-right: 1px solid var(--border);
+            padding: 24px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            overflow-y: auto;
+        }
+
+        .controls-title {
+            font-family: 'Space Mono', monospace;
+            font-size: 10px;
+            color: var(--text-muted);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .control-item {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .control-item label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            color: var(--text-muted);
+            font-family: 'Space Mono', monospace;
+        }
+
+        .control-item label span {
+            color: var(--accent);
+            font-weight: 700;
+        }
+
+        input[type="range"] {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 2px;
+            background: var(--bg3);
+            border-radius: 2px;
+            outline: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: var(--accent);
+            cursor: pointer;
+            box-shadow: 0 0 8px rgba(0, 200, 150, 0.5);
+            transition: transform 0.15s;
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.3);
+        }
+
+        .divider {
+            height: 1px;
+            background: var(--border);
+        }
+
+        .run-btn {
+            width: 100%;
+            padding: 12px;
+            background: transparent;
+            border: 1px solid var(--accent);
+            border-radius: 4px;
+            color: var(--accent);
+            font-family: 'Space Mono', monospace;
+            font-size: 12px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .run-btn::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: var(--accent);
+            transform: translateX(-100%);
+            transition: transform 0.2s;
+            z-index: -1;
+        }
+
+        .run-btn:hover {
+            color: var(--bg);
+        }
+
+        .run-btn:hover::before {
+            transform: translateX(0);
+        }
+
+        .run-btn.running {
+            border-color: var(--accent2);
+            color: var(--accent2);
+            animation: blink 1s ease-in-out infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+
+        .stats {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: auto;
+        }
+
+        .stat {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            font-family: 'Space Mono', monospace;
+            color: var(--text-muted);
+        }
+
+        .stat span:last-child {
+            color: var(--text);
+        }
+
+        /* Network panel */
+        .network-panel {
+            border-bottom: 1px solid var(--border);
+            padding: 20px 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .panel-title {
+            font-family: 'Space Mono', monospace;
+            font-size: 10px;
+            color: var(--text-muted);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        #neuron-canvas {
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            display: block;
+            width: 100%;
+            height: 180px;
+        }
+
+        /* Charts panel */
+        .charts-panel {
+            padding: 20px 24px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .charts-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .chart-wrapper {
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 10px 12px;
+            position: relative;
+        }
+
+        .chart-wrapper.source {
+            border-left: 2px solid var(--source);
+        }
+
+        .chart-wrapper.target {
+            border-left: 2px solid var(--target);
+        }
+
+        .chart-label {
+            font-family: 'Space Mono', monospace;
+            font-size: 9px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+        }
+
+        .chart-wrapper.source .chart-label { color: var(--source); }
+        .chart-wrapper.target .chart-label { color: var(--target); }
+
+        .chart-wrapper canvas {
+            max-height: 70px;
+        }
+
+        /* Progress bar */
+        .progress-bar {
+            height: 2px;
+            background: var(--bg3);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--accent);
+            width: 0%;
+            transition: width 0.05s linear;
+            box-shadow: 0 0 8px var(--accent);
+        }
+
+        /* Timestamp */
+        .timestamp {
+            font-family: 'Space Mono', monospace;
+            font-size: 10px;
+            color: var(--text-muted);
+            text-align: right;
+        }
+
+        /* Legend */
+        .legend {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+            color: var(--text-muted);
+            font-family: 'Space Mono', monospace;
+        }
+
+        .legend-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+    </style>
 </head>
 <body>
 
-    <div id="controls">
-        <label>Excitatory <input type="range" id="excitatory" min="1" max="10" value="3"></label>
-        <label>Inhibitory <input type="range" id="inhibitory" min="0" max="5" value="1"></label>
-        <label>Weight <input type="range" id="weight" min="1" max="20" value="5"></label>
-        <label>Connectivity <input type="range" id="p" min="0" max="1" step="0.1" value="0.5"></label>
-        <button id="runBtn">Run simulation</button>
+<header>
+    <h1>NEUROSIM</h1>
+    <span>LIF Network Simulator v1.0</span>
+    <div class="status-dot"></div>
+</header>
+
+<div class="layout">
+
+    <!-- Sidebar controls -->
+    <aside class="controls">
+        <p class="controls-title">Parameters</p>
+
+        <div class="control-group">
+            <div class="control-item">
+                <label>Excitatory <span id="exc-val">3.0</span></label>
+                <input type="range" id="excitatory" min="1" max="10" step="0.5" value="3">
+            </div>
+            <div class="control-item">
+                <label>Inhibitory <span id="inh-val">1.0</span></label>
+                <input type="range" id="inhibitory" min="0" max="5" step="0.5" value="1">
+            </div>
+            <div class="control-item">
+                <label>Syn. weight <span id="w-val">5.0</span></label>
+                <input type="range" id="weight" min="1" max="20" step="0.5" value="5">
+            </div>
+            <div class="control-item">
+                <label>Connectivity <span id="p-val">0.5</span></label>
+                <input type="range" id="p" min="0.1" max="1" step="0.1" value="0.5">
+            </div>
+            <div class="control-item">
+                <label>Duration (ms) <span id="dur-val">200</span></label>
+                <input type="range" id="duration" min="100" max="500" step="50" value="200">
+            </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <button class="run-btn" id="runBtn">▶ Run Simulation</button>
+
+        <div class="divider"></div>
+
+        <div class="stats">
+            <p class="controls-title">Last Run</p>
+            <div class="stat"><span>Sources</span><span id="stat-sources">—</span></div>
+            <div class="stat"><span>Targets</span><span id="stat-targets">—</span></div>
+            <div class="stat"><span>Synapses</span><span id="stat-synapses">—</span></div>
+            <div class="stat"><span>Total spikes</span><span id="stat-spikes">—</span></div>
+        </div>
+    </aside>
+
+    <!-- Network animation -->
+    <div class="network-panel">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <p class="panel-title">Network Activity</p>
+            <div class="legend">
+                <div class="legend-item"><div class="legend-dot" style="background:var(--source)"></div>Source</div>
+                <div class="legend-item"><div class="legend-dot" style="background:var(--target)"></div>Target</div>
+                <div class="legend-item"><div class="legend-dot" style="background:#ffcc00"></div>Firing</div>
+            </div>
+            <span class="timestamp" id="timestamp">t = —</span>
+        </div>
+        <canvas id="neuron-canvas"></canvas>
+        <div class="progress-bar"><div class="progress-fill" id="progress"></div></div>
     </div>
 
-    <div id="main">
-        <div id="neuron-panel">
-            <canvas id="neuron-canvas" width="400" height="300"></canvas>
-        </div>
-        <div id="charts-panel">
-            <canvas id="source-0"></canvas>
-            <canvas id="source-1"></canvas>
-            <canvas id="source-2"></canvas>
-            <canvas id="source-3"></canvas>
-            <canvas id="source-4"></canvas>
-            <canvas id="target-0"></canvas>
-            <canvas id="target-1"></canvas>
-            <canvas id="target-2"></canvas>
-            <canvas id="target-3"></canvas>
-            <canvas id="target-4"></canvas>
-        </div>
+    <!-- Charts -->
+    <div class="charts-panel">
+        <p class="panel-title">Voltage Traces</p>
+        <div class="charts-grid" id="charts-grid"></div>
     </div>
 
-    <script>
-        let charts = [];
+</div>
 
-        function drawNetwork(data, t) {
-            const canvas = document.getElementById('neuron-canvas');
-            const ctx = canvas.getContext('2d');
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+<script>
+    // Slider live labels
+    const sliders = [
+        { id: 'excitatory', out: 'exc-val' },
+        { id: 'inhibitory', out: 'inh-val' },
+        { id: 'weight',     out: 'w-val' },
+        { id: 'p',          out: 'p-val' },
+        { id: 'duration',   out: 'dur-val' },
+    ];
+    sliders.forEach(({ id, out }) => {
+        const el = document.getElementById(id);
+        el.addEventListener('input', () => {
+            document.getElementById(out).textContent = parseFloat(el.value).toFixed(1);
+        });
+    });
 
-            // Draw synapses
-            data.synapses.forEach(synapse => {
-                const srcX = 80;
-                const srcY = 50 + synapse.source * 50;
-                const trgX = 320;
-                const trgY = 50 + synapse.target * 50;
+    function buildRasterPlot(data) {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'chart-wrapper';
+        wrapper.style.gridColumn = '1 / -1';
+        wrapper.style.borderLeft = '2px solid var(--accent)';
 
-                // Check if source is currently firing
-                const isActive = data.sources[synapse.source].spike_times.includes(t);
+        const labelEl = document.createElement('div');
+        labelEl.className = 'chart-label';
+        labelEl.style.color = 'var(--accent)';
+        labelEl.textContent = 'Raster Plot · All neurons';
+        wrapper.appendChild(labelEl);
 
-                ctx.beginPath();
-                ctx.moveTo(srcX + 20, srcY);
-                ctx.lineTo(trgX - 20, trgY);
-                ctx.strokeStyle = isActive ? 'orange' : 'rgba(150, 150, 150, 0.3)';
-                ctx.lineWidth = isActive ? 2 : 0.5;
-                ctx.stroke();
-            });
+        const canvas = document.createElement('canvas');
+        canvas.height = 120;
+        wrapper.appendChild(canvas);
+        document.getElementById('charts-grid').appendChild(wrapper);
 
-            // Draw source neurons
-            data.sources.forEach((neuron, i) => {
-                const x = 80;
-                const y = 50 + i * 50;
-                const isFiring = neuron.spike_times.includes(t);
-                const voltage = neuron.voltages[t];
-                const normalised = Math.max(0, Math.min(1, (voltage + 70) / 110));
+        const allNeurons = [
+            ...data.sources.map((n, i) => ({ spikes: n.spike_times, label: `S${i+1}`, color: '#3b9eff' })),
+            ...data.targets.map((n, i) => ({ spikes: n.spike_times, label: `T${i+1}`, color: '#ff6b35' }))
+        ];
 
-                ctx.beginPath();
-                ctx.arc(x, y, 20, 0, Math.PI * 2);
-                ctx.fillStyle = isFiring ? 'orange' : `rgb(${Math.round(normalised * 100)}, ${Math.round(normalised * 150)}, 200)`;
-                ctx.fill();
-                ctx.strokeStyle = 'white';
-                ctx.lineWidth = 1.5;
-                ctx.stroke();
+        const duration = data.sources[0].times[data.sources[0].times.length - 1];
 
-                ctx.fillStyle = 'white';
-                ctx.font = '11px sans-serif';
-                ctx.textAlign = 'center';
-                ctx.fillText(`S${i+1}`, x, y + 4);
-            });
-
-            // Draw target neurons
-            data.targets.forEach((neuron, i) => {
-                const x = 320;
-                const y = 50 + i * 50;
-                const isFiring = neuron.spike_times.includes(t);
-                const voltage = neuron.voltages[t];
-                const normalised = Math.max(0, Math.min(1, (voltage + 70) / 110));
-
-                ctx.beginPath();
-                ctx.arc(x, y, 20, 0, Math.PI * 2);
-                ctx.fillStyle = isFiring ? 'orange' : `rgb(${Math.round(normalised * 100)}, ${Math.round(normalised * 150)}, 200)`;
-                ctx.fill();
-                ctx.strokeStyle = 'white';
-                ctx.lineWidth = 1.5;
-                ctx.stroke();
-
-                ctx.fillStyle = 'white';
-                ctx.font = '11px sans-serif';
-                ctx.textAlign = 'center';
-                ctx.fillText(`T${i+1}`, x, y + 4);
-            });
-        }
-
-        function drawCharts(data) {
-            charts.forEach(chart => chart.destroy());
-            charts = [];
-
-            data.sources.forEach((neuron, i) => {
-                const canvas = document.getElementById(`source-${i}`);
-                const chart = new Chart(canvas, {
-                    type: 'line',
-                    data: {
-                        labels: neuron.times,
-                        datasets: [{
-                            label: `Source ${i+1}`,
-                            data: neuron.voltages,
-                            borderColor: 'blue',
-                            borderWidth: 1,
-                            pointRadius: 0
-                        }]
+        new Chart(canvas, {
+            type: 'scatter',
+            data: {
+                datasets: allNeurons.map((neuron, i) => ({
+                    label: neuron.label,
+                    data: neuron.spikes.map(t => ({ x: t, y: i })),
+                    backgroundColor: neuron.color,
+                    pointRadius: 3,
+                    pointStyle: 'line',
+                    pointBorderWidth: 2,
+                    pointBorderColor: neuron.color,
+                }))
+            },
+            options: {
+                animation: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    x: {
+                        min: 0,
+                        max: duration,
+                        title: { display: true, text: 'Time (ms)', color: '#4a6060', font: { size: 9, family: 'Space Mono' } },
+                        ticks: { color: '#4a6060', font: { size: 9, family: 'Space Mono' } },
+                        grid: { color: 'rgba(0,200,150,0.05)' }
                     },
-                    options: {
-                        animation: false,
-                        scales: {
-                            y: { min: -90, max: 50 },
-                            x: { title: { display: true, text: 'Time (ms)' } }
-                        }
+                    y: {
+                        min: -0.5,
+                        max: allNeurons.length - 0.5,
+                        ticks: {
+                            color: '#4a6060',
+                            font: { size: 9, family: 'Space Mono' },
+                            callback: (val) => allNeurons[val]?.label || ''
+                        },
+                        grid: { color: 'rgba(0,200,150,0.05)' }
                     }
-                });
-                charts.push(chart);
-            });
-
-            data.targets.forEach((neuron, i) => {
-                const canvas = document.getElementById(`target-${i}`);
-                const chart = new Chart(canvas, {
-                    type: 'line',
-                    data: {
-                        labels: neuron.times,
-                        datasets: [{
-                            label: `Target ${i+1}`,
-                            data: neuron.voltages,
-                            borderColor: 'red',
-                            borderWidth: 1,
-                            pointRadius: 0
-                        }]
-                    },
-                    options: {
-                        animation: false,
-                        scales: {
-                            y: { min: -90, max: 50 },
-                            x: { title: { display: true, text: 'Time (ms)' } }
-                        }
-                    }
-                });
-                charts.push(chart);
-            });
-        }
-
-        document.getElementById('runBtn').addEventListener('click', async () => {
-            const excitatory = parseFloat(document.getElementById('excitatory').value);
-            const inhibitory = parseFloat(document.getElementById('inhibitory').value);
-            const weight = parseFloat(document.getElementById('weight').value);
-            const p = parseFloat(document.getElementById('p').value);
-
-            const response = await fetch('http://127.0.0.1:5000/simulate', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    excitatory: excitatory,
-                    inhibitory: inhibitory,
-                    weight: weight,
-                    p: p,
-                    duration: 200
-                })
-            });
-
-            const data = await response.json();
-            drawCharts(data);
-            let currentT = 0;
-            function animate() {
-                if (currentT < data.sources[0].times.length) {
-                    drawNetwork(data, currentT);
-                    currentT++;
-                    setTimeout(() => requestAnimationFrame(animate), 100);
                 }
             }
-            currentT = 0;
-            animate();
         });
-    </script>
+    }
+
+    // Charts
+    let charts = [];
+
+    function buildChartsGrid(data) {
+        charts.forEach(c => c.destroy());
+        charts = [];
+
+        const grid = document.getElementById('charts-grid');
+        grid.innerHTML = '';
+
+        const allNeurons = [
+            ...data.sources.map((n, i) => ({ neuron: n, label: `Source ${i+1}`, type: 'source', color: '#3b9eff' })),
+            ...data.targets.map((n, i) => ({ neuron: n, label: `Target ${i+1}`, type: 'target', color: '#ff6b35' }))
+        ];
+
+        allNeurons.forEach(({ neuron, label, type, color }) => {
+            const wrapper = document.createElement('div');
+            wrapper.className = `chart-wrapper ${type}`;
+
+            const labelEl = document.createElement('div');
+            labelEl.className = 'chart-label';
+            labelEl.textContent = label + ` · ${neuron.spike_times.length} spikes`;
+            wrapper.appendChild(labelEl);
+
+            const canvas = document.createElement('canvas');
+            wrapper.appendChild(canvas);
+            grid.appendChild(wrapper);
+
+            const chart = new Chart(canvas, {
+                type: 'line',
+                data: {
+                    labels: neuron.times,
+                    datasets: [{
+                        data: neuron.voltages,
+                        borderColor: color,
+                        borderWidth: 1,
+                        pointRadius: 0,
+                        fill: true,
+                        backgroundColor: color + '10'
+                    }]
+                },
+                options: {
+                    animation: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: {
+                            min: -90, max: 50,
+                            ticks: { color: '#4a6060', font: { size: 9, family: 'Space Mono' }, maxTicksLimit: 4 },
+                            grid: { color: 'rgba(0,200,150,0.05)' }
+                        },
+                        x: {
+                            ticks: { color: '#4a6060', font: { size: 9, family: 'Space Mono' }, maxTicksLimit: 5 },
+                            grid: { color: 'rgba(0,200,150,0.05)' }
+                        }
+                    }
+                }
+            });
+            charts.push(chart);
+        });
+    }
+
+    // Network animation
+    function drawNetwork(data, t) {
+        const canvas = document.getElementById('neuron-canvas');
+        const ctx = canvas.getContext('2d');
+        const W = canvas.width, H = canvas.height;
+        ctx.clearRect(0, 0, W, H);
+
+        const srcX = W * 0.2;
+        const trgX = W * 0.8;
+        const n = 5;
+        const spacing = H / (n + 1);
+
+        // Draw synapses first (behind neurons)
+        data.synapses.forEach(syn => {
+            const sy = spacing * (syn.source + 1);
+            const ty = spacing * (syn.target + 1);
+            const isActive = data.sources[syn.source].spike_times.includes(t);
+
+            ctx.beginPath();
+            ctx.moveTo(srcX + 16, sy);
+            // Curved line
+            ctx.bezierCurveTo(
+                srcX + 80, sy,
+                trgX - 80, ty,
+                trgX - 16, ty
+            );
+            ctx.strokeStyle = isActive ? '#ffcc00' : 'rgba(0,200,150,0.08)';
+            ctx.lineWidth = isActive ? 1.5 : 0.5;
+            ctx.stroke();
+
+            // Travelling signal dot
+            if (isActive) {
+                ctx.beginPath();
+                ctx.arc((srcX + trgX) / 2, (sy + ty) / 2, 3, 0, Math.PI * 2);
+                ctx.fillStyle = '#ffcc00';
+                ctx.fill();
+            }
+        });
+
+        // Draw neurons
+        const drawNeuron = (x, y, voltage, isFiring, label, color) => {
+            const norm = Math.max(0, Math.min(1, (voltage + 70) / 110));
+
+            // Glow when firing
+            if (isFiring) {
+                ctx.beginPath();
+                ctx.arc(x, y, 26, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(255, 204, 0, 0.15)';
+                ctx.fill();
+            }
+
+            // Circle fill based on voltage
+            ctx.beginPath();
+            ctx.arc(x, y, 16, 0, Math.PI * 2);
+            ctx.fillStyle = isFiring ? '#ffcc00' : `rgba(${Math.round(norm*60)}, ${Math.round(norm*180)}, ${Math.round(100 + norm*100)}, 0.9)`;
+            ctx.fill();
+            ctx.strokeStyle = isFiring ? '#ffcc00' : color;
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+
+            // Label
+            ctx.fillStyle = isFiring ? '#000' : '#c8d8d0';
+            ctx.font = '9px Space Mono, monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText(label, x, y + 3);
+        };
+
+        data.sources.forEach((neuron, i) => {
+            const y = spacing * (i + 1);
+            const isFiring = neuron.spike_times.includes(t);
+            drawNeuron(srcX, y, neuron.voltages[t] || -70, isFiring, `S${i+1}`, '#3b9eff');
+        });
+
+        data.targets.forEach((neuron, i) => {
+            const y = spacing * (i + 1);
+            const isFiring = neuron.spike_times.includes(t);
+            drawNeuron(trgX, y, neuron.voltages[t] || -70, isFiring, `T${i+1}`, '#ff6b35');
+        });
+
+        // Timestamp
+        document.getElementById('timestamp').textContent = `t = ${t} ms`;
+        document.getElementById('progress').style.width = `${(t / data.sources[0].times.length) * 100}%`;
+    }
+
+    // Run simulation
+    document.getElementById('runBtn').addEventListener('click', async () => {
+        const btn = document.getElementById('runBtn');
+        btn.classList.add('running');
+        btn.textContent = '● Simulating...';
+
+        const excitatory = parseFloat(document.getElementById('excitatory').value);
+        const inhibitory = parseFloat(document.getElementById('inhibitory').value);
+        const weight     = parseFloat(document.getElementById('weight').value);
+        const p          = parseFloat(document.getElementById('p').value);
+        const duration   = parseInt(document.getElementById('duration').value);
+
+        const response = await fetch('http://127.0.0.1:5000/simulate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ excitatory, inhibitory, weight, p, duration })
+        });
+
+        const data = await response.json();
+
+        btn.classList.remove('running');
+        btn.textContent = '▶ Run Simulation';
+
+        // Update stats
+        const totalSpikes = [
+            ...data.sources.map(n => n.spike_times.length),
+            ...data.targets.map(n => n.spike_times.length)
+        ].reduce((a, b) => a + b, 0);
+
+        document.getElementById('stat-sources').textContent = data.sources.length;
+        document.getElementById('stat-targets').textContent = data.targets.length;
+        document.getElementById('stat-synapses').textContent = data.synapses.length;
+        document.getElementById('stat-spikes').textContent = totalSpikes;
+
+        // Resize canvas properly
+        const canvas = document.getElementById('neuron-canvas');
+        canvas.width = canvas.offsetWidth;
+        canvas.height = canvas.offsetHeight;
+
+        // Draw charts
+        buildChartsGrid(data);
+        buildRasterPlot(data);
+
+        // Animate network
+        let t = 0;
+        function animate() {
+            if (t < data.sources[0].times.length) {
+                drawNetwork(data, t);
+                t++;
+                setTimeout(() => requestAnimationFrame(animate), 50);
+            }
+        }
+        animate();
+    });
+</script>
 
 </body>
 </html>
