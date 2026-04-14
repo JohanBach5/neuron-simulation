@@ -18,7 +18,6 @@
             --text-muted: #4a6060;
             --source: #3b9eff;
             --target: #ff6b35;
-            --glow: 0 0 20px rgba(0, 200, 150, 0.2);
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -31,7 +30,6 @@
             overflow-x: hidden;
         }
 
-        /* Subtle grid background */
         body::before {
             content: '';
             position: fixed;
@@ -78,10 +76,7 @@
             animation: pulse 2s ease-in-out infinite;
         }
 
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.4; }
-        }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
 
         .layout {
             display: grid;
@@ -93,7 +88,6 @@
             z-index: 1;
         }
 
-        /* Controls sidebar */
         .controls {
             grid-row: 1 / 3;
             border-right: 1px solid var(--border);
@@ -112,17 +106,8 @@
             text-transform: uppercase;
         }
 
-        .control-group {
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-        }
-
-        .control-item {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
+        .control-group { display: flex; flex-direction: column; gap: 16px; }
+        .control-item { display: flex; flex-direction: column; gap: 8px; }
 
         .control-item label {
             display: flex;
@@ -133,10 +118,7 @@
             font-family: 'Space Mono', monospace;
         }
 
-        .control-item label span {
-            color: var(--accent);
-            font-weight: 700;
-        }
+        .control-item label span { color: var(--accent); font-weight: 700; }
 
         input[type="range"] {
             -webkit-appearance: none;
@@ -158,14 +140,9 @@
             transition: transform 0.15s;
         }
 
-        input[type="range"]::-webkit-slider-thumb:hover {
-            transform: scale(1.3);
-        }
+        input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.3); }
 
-        .divider {
-            height: 1px;
-            background: var(--border);
-        }
+        .divider { height: 1px; background: var(--border); }
 
         .run-btn {
             width: 100%;
@@ -194,13 +171,8 @@
             z-index: -1;
         }
 
-        .run-btn:hover {
-            color: var(--bg);
-        }
-
-        .run-btn:hover::before {
-            transform: translateX(0);
-        }
+        .run-btn:hover { color: var(--bg); }
+        .run-btn:hover::before { transform: translateX(0); }
 
         .run-btn.running {
             border-color: var(--accent2);
@@ -208,17 +180,9 @@
             animation: blink 1s ease-in-out infinite;
         }
 
-        @keyframes blink {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.6; }
-        }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
 
-        .stats {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            margin-top: auto;
-        }
+        .stats { display: flex; flex-direction: column; gap: 8px; margin-top: auto; }
 
         .stat {
             display: flex;
@@ -228,11 +192,8 @@
             color: var(--text-muted);
         }
 
-        .stat span:last-child {
-            color: var(--text);
-        }
+        .stat span:last-child { color: var(--text); }
 
-        /* Network panel */
         .network-panel {
             border-bottom: 1px solid var(--border);
             padding: 20px 24px;
@@ -258,7 +219,6 @@
             height: 180px;
         }
 
-        /* Charts panel */
         .charts-panel {
             padding: 20px 24px;
             overflow-y: auto;
@@ -278,16 +238,11 @@
             border: 1px solid var(--border);
             border-radius: 6px;
             padding: 10px 12px;
-            position: relative;
         }
 
-        .chart-wrapper.source {
-            border-left: 2px solid var(--source);
-        }
-
-        .chart-wrapper.target {
-            border-left: 2px solid var(--target);
-        }
+        .chart-wrapper.source { border-left: 2px solid var(--source); }
+        .chart-wrapper.target { border-left: 2px solid var(--target); }
+        .chart-wrapper.raster { border-left: 2px solid var(--accent); }
 
         .chart-label {
             font-family: 'Space Mono', monospace;
@@ -299,12 +254,11 @@
 
         .chart-wrapper.source .chart-label { color: var(--source); }
         .chart-wrapper.target .chart-label { color: var(--target); }
+        .chart-wrapper.raster .chart-label { color: var(--accent); }
 
-        .chart-wrapper canvas {
-            max-height: 70px;
-        }
+        .chart-wrapper canvas { max-height: 70px; }
+        .chart-wrapper.raster canvas { max-height: 120px; }
 
-        /* Progress bar */
         .progress-bar {
             height: 2px;
             background: var(--bg3);
@@ -320,7 +274,6 @@
             box-shadow: 0 0 8px var(--accent);
         }
 
-        /* Timestamp */
         .timestamp {
             font-family: 'Space Mono', monospace;
             font-size: 10px;
@@ -328,12 +281,7 @@
             text-align: right;
         }
 
-        /* Legend */
-        .legend {
-            display: flex;
-            gap: 16px;
-            align-items: center;
-        }
+        .legend { display: flex; gap: 16px; align-items: center; }
 
         .legend-item {
             display: flex;
@@ -344,11 +292,7 @@
             font-family: 'Space Mono', monospace;
         }
 
-        .legend-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-        }
+        .legend-dot { width: 8px; height: 8px; border-radius: 50%; }
     </style>
 </head>
 <body>
@@ -361,7 +305,6 @@
 
 <div class="layout">
 
-    <!-- Sidebar controls -->
     <aside class="controls">
         <p class="controls-title">Parameters</p>
 
@@ -403,7 +346,6 @@
         </div>
     </aside>
 
-    <!-- Network animation -->
     <div class="network-panel">
         <div style="display:flex; justify-content:space-between; align-items:center;">
             <p class="panel-title">Network Activity</p>
@@ -418,7 +360,6 @@
         <div class="progress-bar"><div class="progress-fill" id="progress"></div></div>
     </div>
 
-    <!-- Charts -->
     <div class="charts-panel">
         <p class="panel-title">Voltage Traces</p>
         <div class="charts-grid" id="charts-grid"></div>
@@ -442,74 +383,171 @@
         });
     });
 
-    function buildRasterPlot(data) {
-        const wrapper = document.createElement('div');
-        wrapper.className = 'chart-wrapper';
-        wrapper.style.gridColumn = '1 / -1';
-        wrapper.style.borderLeft = '2px solid var(--accent)';
+    // State
+    let charts = [];
+    let synapses = null;
+    let voltageHistory = null;
+    let spikeHistory = null;
+    let currentEvtSource = null;
 
-        const labelEl = document.createElement('div');
-        labelEl.className = 'chart-label';
-        labelEl.style.color = 'var(--accent)';
-        labelEl.textContent = 'Raster Plot · All neurons';
-        wrapper.appendChild(labelEl);
+    function resetHistory() {
+        synapses = null;
+        voltageHistory = {
+            sources: Array(5).fill(null).map(() => []),
+            targets: Array(5).fill(null).map(() => [])
+        };
+        spikeHistory = {
+            sources: Array(5).fill(null).map(() => []),
+            targets: Array(5).fill(null).map(() => [])
+        };
+    }
 
-        const canvas = document.createElement('canvas');
-        canvas.height = 120;
-        wrapper.appendChild(canvas);
-        document.getElementById('charts-grid').appendChild(wrapper);
+    // Draw network diagram
+    function drawNetwork(state, synapses) {
+        const canvas = document.getElementById('neuron-canvas');
+        const ctx = canvas.getContext('2d');
+        const W = canvas.width, H = canvas.height;
+        ctx.clearRect(0, 0, W, H);
+
+        const srcX = W * 0.2;
+        const trgX = W * 0.8;
+        const spacing = H / 6;
+
+        synapses.forEach(syn => {
+            const sy = spacing * (syn.source + 1);
+            const ty = spacing * (syn.target + 1);
+            const isActive = state.sources[syn.source].fired;
+
+            ctx.beginPath();
+            ctx.moveTo(srcX + 16, sy);
+            ctx.bezierCurveTo(srcX + 80, sy, trgX - 80, ty, trgX - 16, ty);
+            ctx.strokeStyle = isActive ? '#ffcc00' : 'rgba(0,200,150,0.08)';
+            ctx.lineWidth = isActive ? 1.5 : 0.5;
+            ctx.stroke();
+
+            if (isActive) {
+                ctx.beginPath();
+                ctx.arc((srcX + trgX) / 2, (sy + ty) / 2, 3, 0, Math.PI * 2);
+                ctx.fillStyle = '#ffcc00';
+                ctx.fill();
+            }
+        });
+
+        const drawNeuron = (x, y, voltage, fired, label, color) => {
+            const norm = Math.max(0, Math.min(1, (voltage + 70) / 110));
+
+            if (fired) {
+                ctx.beginPath();
+                ctx.arc(x, y, 26, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(255, 204, 0, 0.15)';
+                ctx.fill();
+            }
+
+            ctx.beginPath();
+            ctx.arc(x, y, 16, 0, Math.PI * 2);
+            ctx.fillStyle = fired
+                ? '#ffcc00'
+                : `rgba(${Math.round(norm*60)}, ${Math.round(norm*180)}, ${Math.round(100 + norm*100)}, 0.9)`;
+            ctx.fill();
+            ctx.strokeStyle = fired ? '#ffcc00' : color;
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+
+            ctx.fillStyle = fired ? '#000' : '#c8d8d0';
+            ctx.font = '9px Space Mono, monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText(label, x, y + 3);
+        };
+
+        state.sources.forEach((src, i) => {
+            drawNeuron(srcX, spacing * (i+1), src.voltage, src.fired, `S${i+1}`, '#3b9eff');
+        });
+        state.targets.forEach((trg, i) => {
+            drawNeuron(trgX, spacing * (i+1), trg.voltage, trg.fired, `T${i+1}`, '#ff6b35');
+        });
+
+        const duration = parseInt(document.getElementById('duration').value);
+        document.getElementById('timestamp').textContent = `t = ${state.t} ms`;
+        document.getElementById('progress').style.width = `${(state.t / duration) * 100}%`;
+    }
+
+    function buildEmptyCharts(duration) {
+        charts.forEach(c => c.destroy());
+        charts = [];
+
+        const grid = document.getElementById('charts-grid');
+        grid.innerHTML = '';
+
 
         const allNeurons = [
-            ...data.sources.map((n, i) => ({ spikes: n.spike_times, label: `S${i+1}`, color: '#3b9eff' })),
-            ...data.targets.map((n, i) => ({ spikes: n.spike_times, label: `T${i+1}`, color: '#ff6b35' }))
+            ...Array(5).fill(null).map((_, i) => ({ label: `Source ${i+1}`, type: 'source', color: '#3b9eff' })),
+            ...Array(5).fill(null).map((_, i) => ({ label: `Target ${i+1}`, type: 'target', color: '#ff6b35' }))
         ];
 
-        const duration = data.sources[0].times[data.sources[0].times.length - 1];
+        // Create two columns
+        const sourceCol = document.createElement('div');
+        sourceCol.style.cssText = 'display:flex; flex-direction:column; gap:10px;';
 
-        new Chart(canvas, {
-            type: 'scatter',
-            data: {
-                datasets: allNeurons.map((neuron, i) => ({
-                    label: neuron.label,
-                    data: neuron.spikes.map(t => ({ x: t, y: i })),
-                    backgroundColor: neuron.color,
-                    pointRadius: 3,
-                    pointStyle: 'line',
-                    pointBorderWidth: 2,
-                    pointBorderColor: neuron.color,
-                }))
-            },
-            options: {
-                animation: false,
-                plugins: {
-                    legend: { display: false }
+        const targetCol = document.createElement('div');
+        targetCol.style.cssText = 'display:flex; flex-direction:column; gap:10px;';
+
+        grid.appendChild(sourceCol);
+        grid.appendChild(targetCol);
+
+        allNeurons.forEach(({ label, type, color }) => {
+            const wrapper = document.createElement('div');
+            wrapper.className = `chart-wrapper ${type}`;
+
+            const labelEl = document.createElement('div');
+            labelEl.className = 'chart-label';
+            labelEl.textContent = label;
+            wrapper.appendChild(labelEl);
+
+            const canvas = document.createElement('canvas');
+            wrapper.appendChild(canvas);
+            if (type === 'source') {
+                sourceCol.appendChild(wrapper);
+            } else {
+                targetCol.appendChild(wrapper);
+            }
+
+            const chart = new Chart(canvas, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        data: [],
+                        borderColor: color,
+                        borderWidth: 1,
+                        pointRadius: 0,
+                        fill: true,
+                        backgroundColor: color + '10'
+                    }]
                 },
-                scales: {
-                    x: {
-                        min: 0,
-                        max: duration,
-                        title: { display: true, text: 'Time (ms)', color: '#4a6060', font: { size: 9, family: 'Space Mono' } },
-                        ticks: { color: '#4a6060', font: { size: 9, family: 'Space Mono' } },
-                        grid: { color: 'rgba(0,200,150,0.05)' }
-                    },
-                    y: {
-                        min: -0.5,
-                        max: allNeurons.length - 0.5,
-                        ticks: {
-                            color: '#4a6060',
-                            font: { size: 9, family: 'Space Mono' },
-                            callback: (val) => allNeurons[val]?.label || ''
+                options: {
+                    animation: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: {
+                            min: -90, max: 50,
+                            ticks: { color: '#4a6060', font: { size: 9, family: 'Space Mono' }, maxTicksLimit: 4 },
+                            grid: { color: 'rgba(0,200,150,0.05)' }
                         },
-                        grid: { color: 'rgba(0,200,150,0.05)' }
+                        x: {
+                            min: 0,
+                            max: duration,
+                            type: 'linear',
+                            ticks: { color: '#4a6060', font: { size: 9, family: 'Space Mono' }, maxTicksLimit: 5 },
+                            grid: { color: 'rgba(0,200,150,0.05)' }
+                        }
                     }
                 }
-            }
+            });
+            charts.push(chart);
         });
     }
 
-    // Charts
-    let charts = [];
-
+    // Build voltage trace charts
     function buildChartsGrid(data) {
         charts.forEach(c => c.destroy());
         charts = [];
@@ -566,116 +604,72 @@
             });
             charts.push(chart);
         });
+
+        buildRasterPlot(data);
     }
 
-    // Network animation
-    function drawNetwork(data, t) {
-        const canvas = document.getElementById('neuron-canvas');
-        const ctx = canvas.getContext('2d');
-        const W = canvas.width, H = canvas.height;
-        ctx.clearRect(0, 0, W, H);
+    // Raster plot
+    function buildRasterPlot(data) {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'chart-wrapper raster';
+        wrapper.style.gridColumn = '1 / -1';
 
-        const srcX = W * 0.2;
-        const trgX = W * 0.8;
-        const n = 5;
-        const spacing = H / (n + 1);
+        const labelEl = document.createElement('div');
+        labelEl.className = 'chart-label';
+        labelEl.textContent = 'Raster Plot · All neurons';
+        wrapper.appendChild(labelEl);
 
-        // Draw synapses first (behind neurons)
-        data.synapses.forEach(syn => {
-            const sy = spacing * (syn.source + 1);
-            const ty = spacing * (syn.target + 1);
-            const isActive = data.sources[syn.source].spike_times.includes(t);
+        const canvas = document.createElement('canvas');
+        wrapper.appendChild(canvas);
+        document.getElementById('charts-grid').appendChild(wrapper);
 
-            ctx.beginPath();
-            ctx.moveTo(srcX + 16, sy);
-            // Curved line
-            ctx.bezierCurveTo(
-                srcX + 80, sy,
-                trgX - 80, ty,
-                trgX - 16, ty
-            );
-            ctx.strokeStyle = isActive ? '#ffcc00' : 'rgba(0,200,150,0.08)';
-            ctx.lineWidth = isActive ? 1.5 : 0.5;
-            ctx.stroke();
+        const allNeurons = [
+            ...data.sources.map((n, i) => ({ spikes: n.spike_times, label: `S${i+1}`, color: '#3b9eff' })),
+            ...data.targets.map((n, i) => ({ spikes: n.spike_times, label: `T${i+1}`, color: '#ff6b35' }))
+        ];
 
-            // Travelling signal dot
-            if (isActive) {
-                ctx.beginPath();
-                ctx.arc((srcX + trgX) / 2, (sy + ty) / 2, 3, 0, Math.PI * 2);
-                ctx.fillStyle = '#ffcc00';
-                ctx.fill();
+        const duration = data.sources[0].times[data.sources[0].times.length - 1];
+
+        const chart = new Chart(canvas, {
+            type: 'scatter',
+            data: {
+                datasets: allNeurons.map((neuron, i) => ({
+                    label: neuron.label,
+                    data: neuron.spikes.map(t => ({ x: t, y: i })),
+                    backgroundColor: neuron.color,
+                    pointRadius: 3,
+                    pointStyle: 'line',
+                    pointBorderWidth: 2,
+                    pointBorderColor: neuron.color,
+                }))
+            },
+            options: {
+                animation: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: {
+                        min: 0, max: duration,
+                        title: { display: true, text: 'Time (ms)', color: '#4a6060', font: { size: 9, family: 'Space Mono' } },
+                        ticks: { color: '#4a6060', font: { size: 9, family: 'Space Mono' } },
+                        grid: { color: 'rgba(0,200,150,0.05)' }
+                    },
+                    y: {
+                        min: -0.5, max: allNeurons.length - 0.5,
+                        ticks: {
+                            color: '#4a6060',
+                            font: { size: 9, family: 'Space Mono' },
+                            callback: (val) => allNeurons[Math.round(val)]?.label || ''
+                        },
+                        grid: { color: 'rgba(0,200,150,0.05)' }
+                    }
+                }
             }
         });
-
-        // Draw neurons
-        const drawNeuron = (x, y, voltage, isFiring, label, color) => {
-            const norm = Math.max(0, Math.min(1, (voltage + 70) / 110));
-
-            // Glow when firing
-            if (isFiring) {
-                ctx.beginPath();
-                ctx.arc(x, y, 26, 0, Math.PI * 2);
-                ctx.fillStyle = 'rgba(255, 204, 0, 0.15)';
-                ctx.fill();
-            }
-
-            // Circle fill based on voltage
-            ctx.beginPath();
-            ctx.arc(x, y, 16, 0, Math.PI * 2);
-            ctx.fillStyle = isFiring ? '#ffcc00' : `rgba(${Math.round(norm*60)}, ${Math.round(norm*180)}, ${Math.round(100 + norm*100)}, 0.9)`;
-            ctx.fill();
-            ctx.strokeStyle = isFiring ? '#ffcc00' : color;
-            ctx.lineWidth = 1.5;
-            ctx.stroke();
-
-            // Label
-            ctx.fillStyle = isFiring ? '#000' : '#c8d8d0';
-            ctx.font = '9px Space Mono, monospace';
-            ctx.textAlign = 'center';
-            ctx.fillText(label, x, y + 3);
-        };
-
-        data.sources.forEach((neuron, i) => {
-            const y = spacing * (i + 1);
-            const isFiring = neuron.spike_times.includes(t);
-            drawNeuron(srcX, y, neuron.voltages[t] || -70, isFiring, `S${i+1}`, '#3b9eff');
-        });
-
-        data.targets.forEach((neuron, i) => {
-            const y = spacing * (i + 1);
-            const isFiring = neuron.spike_times.includes(t);
-            drawNeuron(trgX, y, neuron.voltages[t] || -70, isFiring, `T${i+1}`, '#ff6b35');
-        });
-
-        // Timestamp
-        document.getElementById('timestamp').textContent = `t = ${t} ms`;
-        document.getElementById('progress').style.width = `${(t / data.sources[0].times.length) * 100}%`;
+        charts.push(chart);
     }
 
-    // Run simulation
-    document.getElementById('runBtn').addEventListener('click', async () => {
-        const btn = document.getElementById('runBtn');
-        btn.classList.add('running');
-        btn.textContent = '● Simulating...';
-
-        const excitatory = parseFloat(document.getElementById('excitatory').value);
-        const inhibitory = parseFloat(document.getElementById('inhibitory').value);
-        const weight     = parseFloat(document.getElementById('weight').value);
-        const p          = parseFloat(document.getElementById('p').value);
-        const duration   = parseInt(document.getElementById('duration').value);
-
-        const response = await fetch('http://127.0.0.1:5000/simulate', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ excitatory, inhibitory, weight, p, duration })
-        });
-
-        const data = await response.json();
-
-        btn.classList.remove('running');
-        btn.textContent = '▶ Run Simulation';
-
-        // Update stats
+    // Update stats
+    function updateStats(data) {
         const totalSpikes = [
             ...data.sources.map(n => n.spike_times.length),
             ...data.targets.map(n => n.spike_times.length)
@@ -685,26 +679,89 @@
         document.getElementById('stat-targets').textContent = data.targets.length;
         document.getElementById('stat-synapses').textContent = data.synapses.length;
         document.getElementById('stat-spikes').textContent = totalSpikes;
+    }
 
-        // Resize canvas properly
+    // Run button
+    document.getElementById('runBtn').addEventListener('click', () => {
+        const btn = document.getElementById('runBtn');
+
+        if (currentEvtSource) currentEvtSource.close();
+
+        btn.classList.add('running');
+        btn.textContent = '● Simulating...';
+
+        const excitatory = parseFloat(document.getElementById('excitatory').value);
+        const inhibitory = parseFloat(document.getElementById('inhibitory').value);
+        const weight     = parseFloat(document.getElementById('weight').value);
+        const p          = parseFloat(document.getElementById('p').value);
+        const duration   = parseInt(document.getElementById('duration').value);
+
+        resetHistory();
+
         const canvas = document.getElementById('neuron-canvas');
-        canvas.width = canvas.offsetWidth;
+        canvas.width  = canvas.offsetWidth;
         canvas.height = canvas.offsetHeight;
 
-        // Draw charts
-        buildChartsGrid(data);
-        buildRasterPlot(data);
+        const params = new URLSearchParams({ excitatory, inhibitory, weight, p, duration });
+        buildEmptyCharts(duration);
+        currentEvtSource = new EventSource(`http://127.0.0.1:5000/stream?${params}`);
 
-        // Animate network
-        let t = 0;
-        function animate() {
-            if (t < data.sources[0].times.length) {
-                drawNetwork(data, t);
-                t++;
-                setTimeout(() => requestAnimationFrame(animate), 50);
+        currentEvtSource.onmessage = (event) => {
+            const state = JSON.parse(event.data);
+
+            if (state.synapses) synapses = state.synapses;
+
+            state.sources.forEach((src, i) => {
+                voltageHistory.sources[i].push(src.voltage);
+                if (src.fired) spikeHistory.sources[i].push(state.t);
+            });
+            state.targets.forEach((trg, i) => {
+                voltageHistory.targets[i].push(trg.voltage);
+                if (trg.fired) spikeHistory.targets[i].push(state.t);
+            });
+
+            state.sources.forEach((src, i) => {
+                charts[i].data.labels.push(state.t);
+                charts[i].data.datasets[0].data.push(src.voltage);
+                charts[i].update('none'); // 'none' skips animation for performance
+            });
+            state.targets.forEach((trg, i) => {
+                charts[5 + i].data.labels.push(state.t);
+                charts[5 + i].data.datasets[0].data.push(trg.voltage);
+                charts[5 + i].update('none');
+            });
+
+            if (synapses) drawNetwork(state, synapses);
+
+            if (state.t === duration - 1) {
+                currentEvtSource.close();
+                btn.classList.remove('running');
+                btn.textContent = '▶ Run Simulation';
+
+                const chartData = {
+                    sources: voltageHistory.sources.map((v, i) => ({
+                        times: v.map((_, t) => t),
+                        voltages: v,
+                        spike_times: spikeHistory.sources[i]
+                    })),
+                    targets: voltageHistory.targets.map((v, i) => ({
+                        times: v.map((_, t) => t),
+                        voltages: v,
+                        spike_times: spikeHistory.targets[i]
+                    })),
+                    synapses: synapses
+                };
+
+                buildRasterPlot(chartData);
+                updateStats(chartData);
             }
-        }
-        animate();
+        };
+
+        currentEvtSource.onerror = () => {
+            btn.classList.remove('running');
+            btn.textContent = '▶ Run Simulation';
+            currentEvtSource.close();
+        };
     });
 </script>
 
