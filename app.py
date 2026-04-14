@@ -44,6 +44,10 @@ def simulate():
         "targets": [
             {"times": trg.times, "voltages": trg.voltages, "spike_times": trg.spike_times}
             for trg in targets
+        ],
+        "synapses": [
+            {"source": sources.index(snp.source), "target": targets.index(snp.target), "weight": snp.weight}
+            for snp in network.synapses
         ]
     })
 

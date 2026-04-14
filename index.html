@@ -37,6 +37,74 @@
     <script>
         let charts = [];
 
+        function drawNetwork(data, t) {
+            const canvas = document.getElementById('neuron-canvas');
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw synapses
+            data.synapses.forEach(synapse => {
+                const srcX = 80;
+                const srcY = 50 + synapse.source * 50;
+                const trgX = 320;
+                const trgY = 50 + synapse.target * 50;
+
+                // Check if source is currently firing
+                const isActive = data.sources[synapse.source].spike_times.includes(t);
+
+                ctx.beginPath();
+                ctx.moveTo(srcX + 20, srcY);
+                ctx.lineTo(trgX - 20, trgY);
+                ctx.strokeStyle = isActive ? 'orange' : 'rgba(150, 150, 150, 0.3)';
+                ctx.lineWidth = isActive ? 2 : 0.5;
+                ctx.stroke();
+            });
+
+            // Draw source neurons
+            data.sources.forEach((neuron, i) => {
+                const x = 80;
+                const y = 50 + i * 50;
+                const isFiring = neuron.spike_times.includes(t);
+                const voltage = neuron.voltages[t];
+                const normalised = Math.max(0, Math.min(1, (voltage + 70) / 110));
+
+                ctx.beginPath();
+                ctx.arc(x, y, 20, 0, Math.PI * 2);
+                ctx.fillStyle = isFiring ? 'orange' : `rgb(${Math.round(normalised * 100)}, ${Math.round(normalised * 150)}, 200)`;
+                ctx.fill();
+                ctx.strokeStyle = 'white';
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
+
+                ctx.fillStyle = 'white';
+                ctx.font = '11px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText(`S${i+1}`, x, y + 4);
+            });
+
+            // Draw target neurons
+            data.targets.forEach((neuron, i) => {
+                const x = 320;
+                const y = 50 + i * 50;
+                const isFiring = neuron.spike_times.includes(t);
+                const voltage = neuron.voltages[t];
+                const normalised = Math.max(0, Math.min(1, (voltage + 70) / 110));
+
+                ctx.beginPath();
+                ctx.arc(x, y, 20, 0, Math.PI * 2);
+                ctx.fillStyle = isFiring ? 'orange' : `rgb(${Math.round(normalised * 100)}, ${Math.round(normalised * 150)}, 200)`;
+                ctx.fill();
+                ctx.strokeStyle = 'white';
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
+
+                ctx.fillStyle = 'white';
+                ctx.font = '11px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText(`T${i+1}`, x, y + 4);
+            });
+        }
+
         function drawCharts(data) {
             charts.forEach(chart => chart.destroy());
             charts = [];
@@ -112,6 +180,16 @@
 
             const data = await response.json();
             drawCharts(data);
+            let currentT = 0;
+            function animate() {
+                if (currentT < data.sources[0].times.length) {
+                    drawNetwork(data, currentT);
+                    currentT++;
+                    setTimeout(() => requestAnimationFrame(animate), 100);
+                }
+            }
+            currentT = 0;
+            animate();
         });
     </script>
 
