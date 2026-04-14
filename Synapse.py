@@ -7,11 +7,5 @@ class Synapse:
 
     def step(self, t):
         past_t = t - self.delay
-        print(
-            f"t={t}, past_t={past_t}, spike_times={self.source.spike_times}, condition={past_t in self.source.spike_times}")
         if past_t in self.source.spike_times:
             self.target.synaptic_input += self.weight
-
-        if t == 5:
-            print(past_t)
-            print(self.source.spike_times)

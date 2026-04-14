@@ -1,38 +1,41 @@
 import matplotlib
 import matplotlib.pyplot as plt
-import LIF
-import Synapse
+from LIF import LIF
+from Network import Network
 
 matplotlib.use('TkAgg')
 
-neuron1 = LIF.LIF()
-neuron2 = LIF.LIF()
-synapse = Synapse.Synapse(neuron1, neuron2, weight=20)
+sources = [LIF() for _ in range(5)]
+targets = [LIF() for _ in range(5)]
+
+network = Network(sources, targets, p=0.5)
+network.connect()
+
 excitatory = 3.0
 inhibitory = 1.0
 
-print(synapse.source is neuron1)
-
 for t in range(100):
-    neuron1.step(t, excitatory=excitatory, inhibitory=inhibitory)
-    neuron2.step(t)
-    synapse.step(t)
+    for src in sources:
+        src.step(t, excitatory=excitatory, inhibitory=inhibitory)
+    for trg in targets:
+        trg.step(t)
+    for snp in network.synapses:
+        snp.step(t)
 
-fig, (ax1, ax2) = plt.subplots(2, 1, sharex=True, figsize=(10, 6))
+fig, axes = plt.subplots(len(sources) + len(targets), 1, sharex=True, figsize=(12, 10))
 
-ax1.plot(neuron1.times, neuron1.voltages)
-ax1.axhline(y=neuron1.threshold, color='orange', linestyle='--', label='threshold')
-ax1.set_ylabel('Vm (mV)')
-ax1.set_title('Neuron A')
-ax1.legend()
+for i, neuron in enumerate(sources):
+    axes[i].plot(neuron.times, neuron.voltages)
+    axes[i].axhline(y=neuron.threshold, color='orange', linestyle='--')
+    axes[i].set_ylabel('Vm (mV)', fontsize=7)
+    axes[i].set_title(f'Source {i+1}', fontsize=8)
 
-ax2.plot(neuron2.times, neuron2.voltages)
-ax2.axhline(y=neuron2.threshold, color='orange', linestyle='--', label='threshold')
-ax2.set_ylabel('Vm (mV)')
-ax2.set_xlabel('Time (ms)')
-ax2.set_title('Neuron B')
-ax2.legend()
+for i, neuron in enumerate(targets):
+    axes[len(sources) + i].plot(neuron.times, neuron.voltages)
+    axes[len(sources) + i].axhline(y=neuron.threshold, color='orange', linestyle='--')
+    axes[len(sources) + i].set_ylabel('Vm (mV)', fontsize=7)
+    axes[len(sources) + i].set_title(f'Target {i+1}', fontsize=8)
 
+plt.xlabel('Time (ms)')
 plt.tight_layout()
-plt.xlim(0, 100)
 plt.savefig('LIF.png')
