@@ -10,5 +10,5 @@ class Neuron(ABC):
         self.spike_times = []
 
     @abstractmethod
-    def step(self, input_current, t, dt=1.0):
+    def step(self, t, dt=1.0, **kwargs):
         pass

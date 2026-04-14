@@ -6,10 +6,11 @@ matplotlib.use('TkAgg')
 
 
 neuron = LIF.LIF()
-input_current = 2.0
+excitatory = 3.0
+inhibitory = 1.0
 
 for t in range(500):
-    neuron.step(input_current, t)
+    neuron.step(t, excitatory, inhibitory)
 
 plt.plot(neuron.times, neuron.voltages)
 plt.axhline(y=neuron.threshold, color='orange', linestyle='--', label='threshold')
