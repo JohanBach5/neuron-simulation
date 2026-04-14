@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neuron Simulation</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+</head>
+<body>
+
+    <div id="controls">
+        <label>Excitatory <input type="range" id="excitatory" min="1" max="10" value="3"></label>
+        <label>Inhibitory <input type="range" id="inhibitory" min="0" max="5" value="1"></label>
+        <label>Weight <input type="range" id="weight" min="1" max="20" value="5"></label>
+        <label>Connectivity <input type="range" id="p" min="0" max="1" step="0.1" value="0.5"></label>
+        <button id="runBtn">Run simulation</button>
+    </div>
+
+    <div id="main">
+        <div id="neuron-panel">
+            <canvas id="neuron-canvas" width="400" height="300"></canvas>
+        </div>
+        <div id="charts-panel">
+            <canvas id="source-0"></canvas>
+            <canvas id="source-1"></canvas>
+            <canvas id="source-2"></canvas>
+            <canvas id="source-3"></canvas>
+            <canvas id="source-4"></canvas>
+            <canvas id="target-0"></canvas>
+            <canvas id="target-1"></canvas>
+            <canvas id="target-2"></canvas>
+            <canvas id="target-3"></canvas>
+            <canvas id="target-4"></canvas>
+        </div>
+    </div>
+
+    <script>
+        let charts = [];
+
+        function drawCharts(data) {
+            charts.forEach(chart => chart.destroy());
+            charts = [];
+
+            data.sources.forEach((neuron, i) => {
+                const canvas = document.getElementById(`source-${i}`);
+                const chart = new Chart(canvas, {
+                    type: 'line',
+                    data: {
+                        labels: neuron.times,
+                        datasets: [{
+                            label: `Source ${i+1}`,
+                            data: neuron.voltages,
+                            borderColor: 'blue',
+                            borderWidth: 1,
+                            pointRadius: 0
+                        }]
+                    },
+                    options: {
+                        animation: false,
+                        scales: {
+                            y: { min: -90, max: 50 },
+                            x: { title: { display: true, text: 'Time (ms)' } }
+                        }
+                    }
+                });
+                charts.push(chart);
+            });
+
+            data.targets.forEach((neuron, i) => {
+                const canvas = document.getElementById(`target-${i}`);
+                const chart = new Chart(canvas, {
+                    type: 'line',
+                    data: {
+                        labels: neuron.times,
+                        datasets: [{
+                            label: `Target ${i+1}`,
+                            data: neuron.voltages,
+                            borderColor: 'red',
+                            borderWidth: 1,
+                            pointRadius: 0
+                        }]
+                    },
+                    options: {
+                        animation: false,
+                        scales: {
+                            y: { min: -90, max: 50 },
+                            x: { title: { display: true, text: 'Time (ms)' } }
+                        }
+                    }
+                });
+                charts.push(chart);
+            });
+        }
+
+        document.getElementById('runBtn').addEventListener('click', async () => {
+            const excitatory = parseFloat(document.getElementById('excitatory').value);
+            const inhibitory = parseFloat(document.getElementById('inhibitory').value);
+            const weight = parseFloat(document.getElementById('weight').value);
+            const p = parseFloat(document.getElementById('p').value);
+
+            const response = await fetch('http://127.0.0.1:5000/simulate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    excitatory: excitatory,
+                    inhibitory: inhibitory,
+                    weight: weight,
+                    p: p,
+                    duration: 200
+                })
+            });
+
+            const data = await response.json();
+            drawCharts(data);
+        });
+    </script>
+
+</body>
+</html>
