@@ -1,5 +1,5 @@
 class Synapse:
-    def __init__(self, source, target, weight=2.0, delay=1):
+    def __init__(self, source, target, weight=3.0, delay=1):
         self.source = source
         self.target = target
         self.weight = weight

@@ -1,3 +1,4 @@
+import random
 import matplotlib
 import matplotlib.pyplot as plt
 from LIF import LIF
@@ -5,17 +6,21 @@ from Network import Network
 
 matplotlib.use('TkAgg')
 
-sources = [LIF() for _ in range(5)]
-targets = [LIF() for _ in range(5)]
+sources = [LIF(vm_init=random.uniform(-70, -60),
+               leak=random.uniform(0.04, 0.06),
+               threshold=random.uniform(-57, -53)) for _ in range(5)]
+
+targets = [LIF(vm_init=random.uniform(-70, -60),
+               leak=random.uniform(0.04, 0.06),
+               threshold=random.uniform(-57, -53)) for _ in range(5)]
 
 network = Network(sources, targets, p=0.5)
 network.connect()
 
-excitatory = 3.0
-inhibitory = 1.0
-
-for t in range(100):
+for t in range(200):
     for src in sources:
+        excitatory = 3.0 + random.gauss(0, 0.5)
+        inhibitory = 1.0 + random.gauss(0, 0.2)
         src.step(t, excitatory=excitatory, inhibitory=inhibitory)
     for trg in targets:
         trg.step(t)
@@ -38,4 +43,4 @@ for i, neuron in enumerate(targets):
 
 plt.xlabel('Time (ms)')
 plt.tight_layout()
-plt.savefig('LIF.png')
+plt.savefig('LIF.pdf')
