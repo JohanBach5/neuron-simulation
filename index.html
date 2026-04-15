@@ -82,12 +82,32 @@
         .layout {
             display: grid;
             grid-template-columns: 260px 1fr;
-            grid-template-rows: auto 1fr;
+            grid-template-rows: 220px 200px 1fr;
             gap: 0;
             height: calc(100vh - 65px);
             position: relative;
             z-index: 1;
         }
+
+        aside.controls {
+            grid-column: 1;
+            grid-row: 1 / 4;
+        }
+
+        .network-panel {
+            grid-column: 2;
+            grid-row: 1;
+        }
+
+        .weight-panel {
+            grid-column: 2;
+            grid-row: 2;
+        }
+
+        .charts-panel {
+            grid-column: 2;
+            grid-row: 3;
+}
 
         .controls {
             grid-row: 1 / 3;
@@ -211,13 +231,21 @@
             text-transform: uppercase;
         }
 
-        #neuron-canvas {
+        .weight-panel {
+            border-bottom: 1px solid var(--border);
+            padding: 20px 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        #weight-canvas {
+            display: block;
+            width: 100%;
+            height: 140px;
             background: var(--bg2);
             border: 1px solid var(--border);
             border-radius: 6px;
-            display: block;
-            width: 100%;
-            height: 180px;
         }
 
         #neuron-3d {
@@ -369,6 +397,13 @@
         </div>
         <div id="neuron-3d"></div>
         <div class="progress-bar"><div class="progress-fill" id="progress"></div></div>
+    </div>
+
+    <div class="weight-panel">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <p class="panel-title">Weight Matrix</p>
+        </div>
+        <canvas id="weight-canvas" height="160"></canvas>
     </div>
 
     <div class="charts-panel">
@@ -557,10 +592,22 @@
         });
 
         // Light up active synapses
-        synapsLines.forEach(({ line, sourceIdx }) => {
+        synapsLines.forEach(({ line, sourceIdx }, i) => {
             const isActive = state.sources[sourceIdx].fired;
-            line.material.opacity = isActive ? 1.0 : 0.2;
-            line.material.color.setHex(isActive ? 0xffcc00 : 0x00c896);
+            const weight = state.weights ? state.weights[i] : 5.0;
+            const normalised = Math.max(0, Math.min(1, weight / 10.0));
+
+            if (isActive) {
+                line.material.color.setHex(0xffcc00);
+                line.material.opacity = 1.0;
+            } else {
+                // Interpolate from dim gray (weak) to bright green (strong)
+                const r = 0
+                const g = Math.round(100 + normalised * 155);
+                const b = Math.round(normalised * 150);
+                line.material.color.setRGB(r/255, g/255, b/255);
+                line.material.opacity = 0.1 + normalised * 0.7;
+            }
         });
     }
 
@@ -644,6 +691,71 @@
         const duration = parseInt(document.getElementById('duration').value);
         document.getElementById('timestamp').textContent = `t = ${state.t} ms`;
         document.getElementById('progress').style.width = `${(state.t / duration) * 100}%`;
+    }
+
+    function drawWeightMatrix(synapses, weights) {
+        const canvas = document.getElementById('weight-canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = canvas.offsetWidth || 600;
+        canvas.height = 140;
+        const W = canvas.width;
+        const H = canvas.height;
+        ctx.clearRect(0, 0, W, H);
+
+        const rows = 5, cols = 5;
+        const paddingLeft = 30, paddingTop = 20;
+        const cellW = (W - paddingLeft - 10) / cols;
+        const cellH = (H - paddingTop - 10) / rows;
+
+        // Build weight lookup: weightMap[sourceIdx][targetIdx] = weight
+        const weightMap = Array(5).fill(null).map(() => Array(5).fill(null));
+        synapses.forEach((syn, i) => {
+            weightMap[syn.source][syn.target] = weights ? weights[i] : 0;
+        });
+
+        // Column labels (T1-T5)
+        ctx.font = '9px Space Mono, monospace';
+        ctx.fillStyle = '#ff6b35';
+        ctx.textAlign = 'center';
+        for (let col = 0; col < cols; col++) {
+            ctx.fillText(`T${col+1}`, paddingLeft + col * cellW + cellW/2, paddingTop - 6);
+        }
+
+        // Row labels (S1-S5)
+        ctx.fillStyle = '#3b9eff';
+        ctx.textAlign = 'right';
+        for (let row = 0; row < rows; row++) {
+            ctx.fillText(`S${row+1}`, paddingLeft - 4, paddingTop + row * cellH + cellH/2 + 3);
+        }
+
+        // Draw cells
+        for (let row = 0; row < rows; row++) {
+            for (let col = 0; col < cols; col++) {
+                const x = paddingLeft + col * cellW;
+                const y = paddingTop + row * cellH;
+                const weight = weightMap[row][col];
+
+                if (weight === null) {
+                    // No connection
+                    ctx.fillStyle = 'rgba(0,0,0,0)';
+                    ctx.strokeStyle = 'rgba(0,200,150,0.05)';
+                    ctx.lineWidth = 0.5;
+                    ctx.strokeRect(x + 1, y + 1, cellW - 2, cellH - 2);
+                } else {
+                    const norm = Math.max(0, Math.min(1, weight / 10.0));
+                    const g = Math.round(80 + norm * 175);
+                    const b = Math.round(norm * 100);
+                    ctx.fillStyle = `rgba(0, ${g}, ${b}, ${0.2 + norm * 0.8})`;
+                    ctx.fillRect(x + 1, y + 1, cellW - 2, cellH - 2);
+
+                    // Weight value
+                    ctx.fillStyle = norm > 0.5 ? '#000' : '#00c896';
+                    ctx.font = '8px Space Mono, monospace';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(weight.toFixed(1), x + cellW/2, y + cellH/2 + 3);
+                }
+            }
+        }
     }
 
     function buildEmptyCharts(duration) {
@@ -913,6 +1025,7 @@
             });
 
             if (synapses) updateNetwork3D(state);
+            if (synapses && state.weights) drawWeightMatrix(synapses, state.weights);
 
             if (state.t === duration - 1) {
                 currentEvtSource.close();

@@ -55,8 +55,10 @@ def stream():
                 "t": t,
                 "sources": [{"voltage": src.voltages[-1], "fired": t in src.spike_times} for src in sources],
                 "targets": [{"voltage": trg.voltages[-1], "fired": t in trg.spike_times} for trg in targets],
-                "synapses": synapses if t == 0 else None
+                "synapses": synapses if t == 0 else None,
+                "weights": [snp.weight for snp in network.synapses]
             }
+
 
             yield f"data: {json.dumps(state)}\n\n"
             time.sleep(0.03)
@@ -100,7 +102,7 @@ def simulate():
         "synapses": [
             {"source": sources.index(snp.source), "target": targets.index(snp.target), "weight": snp.weight}
             for snp in network.synapses
-        ]
+        ],
     })
 
 
