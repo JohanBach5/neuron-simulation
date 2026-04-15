@@ -14,7 +14,7 @@ targets = [LIF(vm_init=random.uniform(-70, -60),
                leak=random.uniform(0.04, 0.06),
                threshold=random.uniform(-57, -53)) for _ in range(5)]
 
-network = Network(sources, targets, p=0.5)
+network = Network(sources, targets, p=0.5, weight=10.0)
 network.connect()
 
 for t in range(200):
@@ -26,6 +26,11 @@ for t in range(200):
         trg.step(t)
     for snp in network.synapses:
         snp.step(t)
+
+for i, snp in enumerate(network.synapses):
+    print(f"Synapse {i} (S{sources.index(snp.source)+1} → T{targets.index(snp.target)+1}): weight = {snp.weight:.4f}")
+for i, trg in enumerate(targets):
+    print(f"Target {i+1} spikes: {len(trg.spike_times)}")
 
 fig, axes = plt.subplots(len(sources) + len(targets), 1, sharex=True, figsize=(12, 10))
 
