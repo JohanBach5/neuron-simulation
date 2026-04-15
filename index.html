@@ -380,6 +380,7 @@
 
 <script>
     let scene, camera, renderer, neuronMeshes = [], synapsLines = [];
+    let glowIntensities = Array(10).fill(0);
 
     // Slider live labels
     const sliders = [
@@ -420,6 +421,7 @@
             renderer = new THREE.WebGLRenderer({antialias: true, alpha: true});
             renderer.setSize(W, H);
             renderer.setClearColor(0x000000, 0);
+            renderer.setPixelRatio(window.devicePixelRatio);
             container.appendChild(renderer.domElement);
 
             // Lights
@@ -433,15 +435,45 @@
             // Render loop
             function animate() {
                 requestAnimationFrame(animate);
-                scene.rotation.y += 0.003;
-                renderer.render(scene, camera);
-            }
+
+                neuronMeshes.forEach((mesh, i) => {
+                    if (glowIntensities[i] > 0) {
+                        glowIntensities[i] = Math.max(0, glowIntensities[i] - 0.05);
+                        const g = glowIntensities[i];
+                        const isSource = i < 5;
+                        mesh.material.color.setRGB(
+                            isSource ? 0.23 + g * 0.77 : 1.0,
+                            isSource ? 0.59 + g * 0.41 : 0.42 + g * 0.38,
+                            isSource ? 1.0 - g * 0.8 : 0.21 - g * 0.21
+                        );
+                        mesh.material.emissive.setRGB(g * 0.5, g * 0.4, 0);
+                        mesh.scale.setScalar(1 + g * 0.8);
+                    }
+                });
+
+    scene.rotation.y += 0.003;
+    renderer.render(scene, camera);
+
+}
 
             animate();
             console.log('initScene complete');
         } catch (e) {
             console.error('initsScene error', e);
         }
+    }
+
+    function resetNetwork3D() {
+        neuronMeshes.forEach((mesh, i) => {
+            const isSource = i < 5;
+            mesh.material.color.setHex(isSource ? 0x3b9eff : 0xff6b35);
+            mesh.material.emissive.setHex(isSource ? 0x1a4a7a : 0x7a2a10);
+            mesh.scale.setScalar(1);
+        });
+        synapsLines.forEach(({ line }) => {
+            line.material.opacity = 0.2;
+            line.material.color.setHex(0x00c896);
+        });
     }
 
     function buildNetwork3D(synapses) {
@@ -501,6 +533,7 @@
                 mesh.material.color.setHex(0xffcc00);
                 mesh.material.emissive.setHex(0xffcc00);
                 mesh.scale.setScalar(1.8);
+                glowIntensities[i] = 1.0
             } else {
                 const norm = Math.max(0, Math.min(1, (src.voltage + 70) / 110));
                 mesh.material.color.setHex(0x3b9eff);
@@ -839,6 +872,7 @@
         const duration   = parseInt(document.getElementById('duration').value);
 
         resetHistory();
+        resetNetwork3D();
 
         const canvas = document.getElementById('neuron-3d');
         canvas.width  = canvas.offsetWidth;
